@@ -18,6 +18,12 @@ try {
 
     builder.Host.UseSerilog();
     builder.Services.AddControllers();
+    builder.Services.AddCors(o =>
+    {
+        o.AddPolicy("AllowAll", aa =>
+        aa.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+        );
+    });
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
