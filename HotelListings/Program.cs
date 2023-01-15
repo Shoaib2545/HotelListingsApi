@@ -1,3 +1,5 @@
+using HotelListings.MyDbContext;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
 
@@ -17,6 +19,7 @@ try {
     // Add services to the container.
 
     builder.Host.UseSerilog();
+    builder.Services.AddDbContext<AppDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("SqlConnection")));
     builder.Services.AddControllers();
     builder.Services.AddCors(o =>
     {
