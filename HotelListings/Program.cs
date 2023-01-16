@@ -1,5 +1,7 @@
+using HotelListings.Configurations;
 using HotelListings.MyDbContext;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 
@@ -27,6 +29,7 @@ try {
         aa.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
         );
     });
+    builder.Services.AddAutoMapper(typeof(MapperInitializer));
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();

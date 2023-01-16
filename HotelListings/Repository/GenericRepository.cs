@@ -17,7 +17,7 @@ namespace HotelListings.Repository
         public async Task Delete(int id)
         {
             var entity = await _db.FindAsync(id);
-            _db.Remove(entity);
+            _db.Remove(entity!);
         }
 
         public void DeleteRange(IEnumerable<T> entities)
