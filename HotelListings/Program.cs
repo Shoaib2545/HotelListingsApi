@@ -1,5 +1,7 @@
 using HotelListings.Configurations;
+using HotelListings.IRepository;
 using HotelListings.MyDbContext;
+using HotelListings.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -21,8 +23,9 @@ try {
     // Add services to the container.
 
     builder.Host.UseSerilog();
+    builder.Services.AddTransient<IUnitOfWork , UnitOfWork>();
     builder.Services.AddDbContext<AppDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("SqlConnection")));
-    builder.Services.AddControllers();
+    builder.Services.AddControllers().AddNewtonsoftJson(op => op.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
     builder.Services.AddCors(o =>
     {
         o.AddPolicy("AllowAll", aa =>
