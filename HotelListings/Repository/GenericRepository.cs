@@ -22,7 +22,7 @@ namespace HotelListings.Repository
 
         public void DeleteRange(IEnumerable<T> entities)
         {
-            throw new NotImplementedException();
+            _db.RemoveRange(entities);
         }
 
         public async Task<T> Get(Expression<Func<T, bool>> expression, List<string>? includes = null)
