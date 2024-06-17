@@ -9,8 +9,9 @@ namespace HotelListings.Repository
         private readonly AppDbContext _appDbContext;
         private IGenericRepository<Country>? _countries;
         private IGenericRepository<Hotel>? _hotels;
-        public UnitOfWork(AppDbContext appDbContext) { 
-            _appDbContext = appDbContext;
+        public UnitOfWork(AppDbContext appDbContext)
+        {
+            _appDbContext = appDbContext ?? throw new ArgumentNullException(nameof(appDbContext));
         }
         public IGenericRepository<Country> Countries => _countries ??= new GenericRepository<Country>(_appDbContext);
         public IGenericRepository<Hotel> Hotels => _hotels ??= new GenericRepository<Hotel>(_appDbContext);
