@@ -1,8 +1,10 @@
 ﻿
+using HotelListings.DTOs;
 using HotelListings.IRepository;
 using HotelListings.MyDbContext;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using X.PagedList;
 
 namespace HotelListings.Repository
 {
@@ -10,7 +12,8 @@ namespace HotelListings.Repository
     {
         private readonly AppDbContext _appDbContext;
         private readonly DbSet<T> _db;
-        public GenericRepository(AppDbContext appDbContext) { 
+        public GenericRepository(AppDbContext appDbContext)
+        {
             _appDbContext = appDbContext;
             _db = _appDbContext.Set<T>();
         }
@@ -28,8 +31,10 @@ namespace HotelListings.Repository
         public async Task<T> Get(Expression<Func<T, bool>> expression, List<string>? includes = null)
         {
             IQueryable<T> query = _db;
-            if (includes != null) {
-                foreach (var includeProperty in includes) { 
+            if (includes != null)
+            {
+                foreach (var includeProperty in includes)
+                {
                     query = query.Include(includeProperty);
                 }
             }
@@ -39,7 +44,8 @@ namespace HotelListings.Repository
         public async Task<IList<T>> GetAll(Expression<Func<T, bool>>? expression = null, Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null, List<string>? includes = null)
         {
             IQueryable<T> query = _db;
-            if (expression != null) {
+            if (expression != null)
+            {
                 query = query.Where(expression);
             }
             if (includes != null)
@@ -49,10 +55,26 @@ namespace HotelListings.Repository
                     query = query.Include(includeProperty);
                 }
             }
-            if (orderBy != null) {
+            if (orderBy != null)
+            {
                 query = orderBy(query);
             }
             return await query.AsNoTracking().ToListAsync();
+        }
+
+        public async Task<IPagedList<T>> GetPagedData(PagingParams pagingParams, List<string>? includes = null)
+        {
+            IQueryable<T> query = _db;
+
+            if (includes != null)
+            {
+                foreach (var includeProperty in includes)
+                {
+                    query = query.Include(includeProperty);
+                }
+            }
+
+            return await query.AsNoTracking().ToPagedListAsync(pagingParams.PageNumber, pagingParams.PageSize);
         }
 
         public async Task Insert(T entity)

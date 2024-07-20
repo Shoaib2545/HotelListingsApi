@@ -1,4 +1,6 @@
-﻿using System.Linq.Expressions;
+﻿using HotelListings.DTOs;
+using System.Linq.Expressions;
+using X.PagedList;
 
 namespace HotelListings.IRepository
 {
@@ -7,6 +9,11 @@ namespace HotelListings.IRepository
         Task<IList<T>> GetAll(
                 Expression<Func<T, bool>>? expression = null,
                 Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+                List<string>? includes = null
+            );
+
+        Task<IPagedList<T>> GetPagedData(
+            PagingParams pagingParams,
                 List<string>? includes = null
             );
         Task<T> Get(Expression<Func<T, bool>> expression, List<string>? includes = null);
