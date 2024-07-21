@@ -1,9 +1,11 @@
+using AspNetCoreRateLimit;
 using HotelListings;
 using HotelListings.Configurations;
 using HotelListings.IRepository;
 using HotelListings.MyDbContext;
 using HotelListings.Repository;
 using HotelListings.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -29,7 +31,23 @@ try
     builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
     builder.Services.AddScoped<IAuthManager, AuthManager>();
     builder.Services.AddDbContext<AppDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("SqlConnection")));
-    builder.Services.AddControllers().AddNewtonsoftJson(op => op.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+    builder.Services.AddMemoryCache();
+
+    builder.Services.ConfigureRateLimiting();
+    builder.Services.AddHttpContextAccessor();
+
+    builder.Services.ConfigureHttpCacheHeaders();
+
+    builder.Services.AddControllers(config =>
+    {
+        config.CacheProfiles.Add("120SecondsDuration", new CacheProfile
+        {
+            Duration = 120
+        });
+    })
+        .AddNewtonsoftJson(op => op.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+    builder.Services.AddResponseCaching();
     builder.Services.AddAuthentication();
     builder.Services.ConfigureIdentity();
     builder.Services.AddCors(o =>
@@ -52,6 +70,10 @@ try
         app.UseSwaggerUI();
     }
     app.ConfigureExceptionHandler();
+
+    app.UseResponseCaching();
+    app.UseHttpCacheHeaders();
+    app.UseIpRateLimiting();
 
     app.UseHttpsRedirection();
 

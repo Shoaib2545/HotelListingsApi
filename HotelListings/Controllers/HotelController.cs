@@ -2,7 +2,9 @@
 using HotelListings.DTOs;
 using HotelListings.IRepository;
 using HotelListings.Models;
+using Marvin.Cache.Headers;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace HotelListings.Controllers
 {
@@ -22,21 +24,27 @@ namespace HotelListings.Controllers
         }
 
         [HttpGet]
+        //[ResponseCache(CacheProfileName = "120SecondsDuration")]
+        [HttpCacheExpiration(CacheLocation = CacheLocation.Public, MaxAge = 60)]
+        [HttpCacheValidation(MustRevalidate = false)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetHotels([FromQuery] PagingParams pagingParams)
         {
-            var hotels = await _unitOfWork.Hotels.GetPagedData(pagingParams);
+            var hotels = await _unitOfWork.Hotels.GetPagedData(pagingParams, include: q => q.Include(x => x.Country));
             var results = _mapper.Map<IList<HotelDTO>>(hotels);
             return Ok(results);
         }
 
         [HttpGet("{id:int}", Name = "GetHotel")]
+        //[ResponseCache(CacheProfileName = "120SecondsDuration")]
+        [HttpCacheExpiration(CacheLocation = CacheLocation.Public, MaxAge = 60)]
+        [HttpCacheValidation(MustRevalidate = false)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetHotel(int id)
         {
-            var hotel = await _unitOfWork.Hotels.Get(q => q.Id == id, new List<string> { "Country" });
+            var hotel = await _unitOfWork.Hotels.Get(q => q.Id == id, include: q => q.Include(x => x.Country));
             var result = _mapper.Map<HotelDTO>(hotel);
             return Ok(result);
         }

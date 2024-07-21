@@ -1,6 +1,8 @@
 ﻿using Asp.Versioning;
+using AspNetCoreRateLimit;
 using HotelListings.Models;
 using HotelListings.MyDbContext;
+using Marvin.Cache.Headers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
@@ -78,5 +80,39 @@ public static class ServiceExtension
              options.GroupNameFormat = "'v'V";
              options.SubstituteApiVersionInUrl = true;
          });
+    }
+
+    public static void ConfigureHttpCacheHeaders(this IServiceCollection services)
+    {
+        services.AddResponseCaching();
+        services.AddHttpCacheHeaders(expirationOption =>
+        {
+            expirationOption.MaxAge = 120;
+            expirationOption.CacheLocation = CacheLocation.Private;
+        }, validationOption =>
+        {
+            validationOption.MustRevalidate = true;
+        });
+    }
+
+    public static void ConfigureRateLimiting(this IServiceCollection services)
+    {
+        var rateLimitRules = new List<RateLimitRule>
+        {
+            new RateLimitRule
+            {
+                Endpoint = "*",
+                Limit = 1,
+                Period = "1s"
+            }
+        };
+        services.Configure<IpRateLimitOptions>(opt =>
+        {
+            opt.GeneralRules = rateLimitRules;
+        });
+        services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+        services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+        services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+        services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
     }
 }
